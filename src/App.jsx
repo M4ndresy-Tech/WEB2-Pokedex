@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import PokemonCard from "./components/PokemonCard";
 import PokemonModal from "./components/PokemonModal";
 import Pokemon_logo from './assets/Pokémon_logo.png'
@@ -97,8 +97,9 @@ export default function App() {
 
     return (
         <div className={`min-h-screen ${getBgClass()} text-gray-900`}>
-            <header className={`${getNavbarClass()} shadow-md py-4 px-6 flex flex-col sm:flex-row justify-between items-center sticky top-0 z-50 rounded-b-xl gap-4`}>
-                <img src={Pokemon_logo} alt="Pokémon_logo" className="w-40" />
+            <header
+                className={`${getNavbarClass()} shadow-md py-4 px-6 flex flex-col sm:flex-row justify-between items-center sticky top-0 z-50 rounded-b-xl gap-4`}>
+                <img src={Pokemon_logo} alt="Pokémon_logo" className="w-40"/>
                 <div className="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto">
                     <div className="relative w-full sm:w-64">
                         <input
@@ -131,9 +132,12 @@ export default function App() {
                             onChange={toggleTheme}
                             className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-gray-600 transition-all duration-300">
-                            <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 ${theme === 'dark' ? 'translate-x-5' : 'bg-gray-300'}`}>
-                                <span className={`absolute inset-0 flex items-center justify-center text-xs ${theme === 'dark' ? 'text-black' : 'text-gray-600'}`}>
+                        <div
+                            className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-gray-600 transition-all duration-300">
+                            <div
+                                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 ${theme === 'dark' ? 'translate-x-5' : 'bg-gray-300'}`}>
+                                <span
+                                    className={`absolute inset-0 flex items-center justify-center text-xs ${theme === 'dark' ? 'text-black' : 'text-gray-600'}`}>
                                     {theme === 'dark' ? '🌙' : '☀️'}
                                 </span>
                             </div>
@@ -177,6 +181,7 @@ export default function App() {
                                                     )
                                                 ).then((evolutionDetails) => {
                                                     setSelectedPokemon({
+                                                        id: id,
                                                         name: data.name,
                                                         image: data.sprites?.other["official-artwork"]?.front_default || "",
                                                         weight: data.weight,
@@ -197,7 +202,7 @@ export default function App() {
                             onClick={handleClick}
                             className="cursor-pointer"
                         >
-                            <PokemonCard name={poke.name} image={image} types={types} theme={theme} />
+                            <PokemonCard name={poke.name} image={image} types={types} theme={theme} id={id}/>
                         </div>
                     );
                 })}
@@ -208,6 +213,7 @@ export default function App() {
                 pokemon={selectedPokemon}
                 onClose={() => setSelectedPokemon(null)}
                 theme={theme}
+                id={selectedPokemon?.id || ''}
             />
         </div>
     );
