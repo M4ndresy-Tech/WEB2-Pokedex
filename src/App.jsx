@@ -11,42 +11,46 @@ export default function App() {
     const [selectedType, setSelectedType] = useState("all");
     const [typeMap, setTypeMap] = useState({});
     const [theme, setTheme] = useState("light");
+    const [lightThemeIndex, setLightThemeIndex] = useState(0);
 
-    const toggleTheme = () => {
-        setTheme(theme === "light" ? "dark" : "light");
+    const lightThemes = [
+        { name: "sunrise", bg: "bg-gradient-to-r from-orange-300 via-pink-400 to-purple-500" },
+        { name: "galaxy", bg: "bg-gradient-to-r from-indigo-900 via-purple-800 to-gray-900" },
+        { name: "ice", bg: "bg-gradient-to-r from-cyan-200 via-cyan-400 to-blue-500" },
+        { name: "candy", bg: "bg-gradient-to-r from-pink-300 via-rose-400 to-red-500" },
+        { name: "nature", bg: "bg-gradient-to-r from-green-200 via-teal-300 to-emerald-400" },
+        { name: "cloud", bg: "bg-gradient-to-r from-slate-100 via-white to-slate-100" },
+        { name: "space", bg: "bg-gradient-to-r from-gray-900 via-purple-900 to-black" },
+        { name: "default", bg: "bg-[#6a9ae7]" },
+    ];
+
+    const cycleThemes = () => {
+        if (theme === "dark") {
+            setTheme("light");
+            setLightThemeIndex(0);
+        } else {
+            const nextIndex = (lightThemeIndex + 1) % lightThemes.length;
+            if (nextIndex === 0) {
+                setTheme("dark");
+            } else {
+                setLightThemeIndex(nextIndex);
+            }
+        }
     };
 
     const getBgClass = () => {
-        switch (theme) {
-            case "light":
-                return "bg-[#6a9ae7]";
-            case "dark":
-                return "bg-gray-900";
-            default:
-                return "bg-[#6a9ae7]";
-        }
+        if (theme === "dark") return "bg-gray-900";
+        return lightThemes[lightThemeIndex].bg;
     };
 
     const getNavbarClass = () => {
-        switch (theme) {
-            case "light":
-                return "bg-white text-black";
-            case "dark":
-                return "bg-gray-800 text-white";
-            default:
-                return "bg-white text-black";
-        }
+        if (theme === "dark") return "bg-gray-800 text-white";
+        return "bg-white text-black";
     };
 
     const getInputClass = () => {
-        switch (theme) {
-            case "light":
-                return "bg-white text-black border-gray-300";
-            case "dark":
-                return "bg-gray-700 text-white border-gray-600";
-            default:
-                return "bg-white text-black border-gray-300";
-        }
+        if (theme === "dark") return "bg-gray-700 text-white border-gray-600";
+        return "bg-white text-black border-gray-300";
     };
 
     useEffect(() => {
@@ -128,11 +132,11 @@ export default function App() {
                         <input
                             type="checkbox"
                             checked={theme === "dark"}
-                            onChange={toggleTheme}
+                            onChange={cycleThemes}
                             className="sr-only peer"
                         />
                         <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-gray-600 transition-all duration-300">
-                            <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 ${theme === 'dark' ? 'translate-x-5' : 'bg-gray-300'}`}>
+                            <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 ${theme === 'dark' ? 'translate-x-5 bg-yellow-400' : 'bg-gray-300'}`}>
                                 <span className={`absolute inset-0 flex items-center justify-center text-xs ${theme === 'dark' ? 'text-black' : 'text-gray-600'}`}>
                                     {theme === 'dark' ? '🌙' : '☀️'}
                                 </span>
