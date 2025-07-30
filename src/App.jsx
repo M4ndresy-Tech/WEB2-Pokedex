@@ -132,7 +132,7 @@ export default function App() {
                             className="sr-only peer"
                         />
                         <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-gray-600 transition-all duration-300">
-                            <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 ${theme === 'dark' ? 'translate-x-5 bg-yellow-400' : 'bg-gray-300'}`}>
+                            <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 ${theme === 'dark' ? 'translate-x-5' : 'bg-gray-300'}`}>
                                 <span className={`absolute inset-0 flex items-center justify-center text-xs ${theme === 'dark' ? 'text-black' : 'text-gray-600'}`}>
                                     {theme === 'dark' ? '🌙' : '☀️'}
                                 </span>
