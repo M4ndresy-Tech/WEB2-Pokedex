@@ -1,75 +1,214 @@
 import { useEffect, useState } from "react";
 import PokemonCard from "./components/PokemonCard";
 import PokemonModal from "./components/PokemonModal";
+import Pokemon_logo from './assets/Pokémon_logo.png'
 
 export default function App() {
-  const [pokemons, setPokemons] = useState([]);
-  const [search, setSearch] = useState("");
-  const [selectedPokemon, setSelectedPokemon] = useState(null);
+    const [pokemons, setPokemons] = useState([]);
+    const [search, setSearch] = useState("");
+    const [selectedPokemon, setSelectedPokemon] = useState(null);
+    const [types, setTypes] = useState([]);
+    const [selectedType, setSelectedType] = useState("all");
+    const [typeMap, setTypeMap] = useState({});
+    const [theme, setTheme] = useState("light");
 
-  useEffect(() => {
-    fetch("https://pokeapi.co/api/v2/pokemon?limit=151")
-      .then((res) => res.json())
-      .then((data) => setPokemons(data.results));
-  }, []);
+    const toggleTheme = () => {
+        setTheme(theme === "light" ? "dark" : "light");
+    };
 
-  const filtered = pokemons.filter((poke) =>
-    poke.name.toLowerCase().includes(search.toLowerCase())
-  );
+    const getBgClass = () => {
+        switch (theme) {
+            case "light":
+                return "bg-[#6a9ae7]";
+            case "dark":
+                return "bg-gray-900";
+            default:
+                return "bg-[#6a9ae7]";
+        }
+    };
 
-  return (
-    <div className="min-h-screen bg-white text-gray-900">
-      {/* Barre du haut : champ de recherche */}
-      <div className="flex justify-center items-center p-4 max-w-4xl mx-auto">
-        <div className="relative w-full">
-          <input
-            type="text"
-            placeholder="Rechercher un Pokémon..."
-            className="w-full pl-10 pr-4 py-2 rounded border"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
-        </div>
-      </div>
+    const getNavbarClass = () => {
+        switch (theme) {
+            case "light":
+                return "bg-white text-black";
+            case "dark":
+                return "bg-gray-800 text-white";
+            default:
+                return "bg-white text-black";
+        }
+    };
 
-      
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 max-w-4xl mx-auto">
-        {filtered.map((poke) => {
-          const id = poke.url.split("/")[6];
-          const image = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+    const getInputClass = () => {
+        switch (theme) {
+            case "light":
+                return "bg-white text-black border-gray-300";
+            case "dark":
+                return "bg-gray-700 text-white border-gray-600";
+            default:
+                return "bg-white text-black border-gray-300";
+        }
+    };
 
-          const handleClick = () => {
-            fetch(`https://pokeapi.co/api/v2/pokemon/${poke.name}`)
-              .then((res) => res.json())
-              .then((data) => {
-                setSelectedPokemon({
-                  name: data.name,
-                  image: image,
-                  weight: data.weight,
-                  height: data.height,
-                  types: data.types,
+    useEffect(() => {
+        fetch("https://pokeapi.co/api/v2/pokemon?limit=151")
+            .then((res) => res.json())
+            .then((data) => {
+                setPokemons(data.results);
+                data.results.forEach((poke) => {
+                    fetch(`https://pokeapi.co/api/v2/pokemon/${poke.name}`)
+                        .then((res) => res.json())
+                        .then((details) => {
+                            setTypeMap((prev) => ({
+                                ...prev,
+                                [poke.name]: details.types.map((t) => t.type.name),
+                            }));
+                        });
                 });
-              });
-          };
+            });
 
-          return (
-            <div
-              key={poke.name}
-              onClick={handleClick}
-              className="cursor-pointer"
-            >
-              <PokemonCard name={poke.name} image={image} />
+        fetch("https://pokeapi.co/api/v2/type")
+            .then((res) => res.json())
+            .then((data) => {
+                const validTypes = data.results.filter(
+                    (t) => !["shadow", "unknown"].includes(t.name)
+                );
+                setTypes(validTypes);
+            });
+    }, []);
+
+    useEffect(() => {
+        const handler = (e) => {
+            setSelectedPokemon(e.detail);
+        };
+        window.addEventListener("openPokemon", handler);
+        return () => window.removeEventListener("openPokemon", handler);
+    }, []);
+
+    const filtered = pokemons.filter((poke) => {
+        const lowerSearch = search.toLowerCase();
+        const typesOfPokemon = typeMap[poke.name] || [];
+
+        const matchesSearch = poke.name.toLowerCase().includes(lowerSearch);
+        const matchesType =
+            selectedType === "all" || typesOfPokemon.includes(selectedType);
+
+        return matchesSearch && matchesType;
+    });
+
+    return (
+        <div className={`min-h-screen ${getBgClass()} text-gray-900`}>
+            <header className={`${getNavbarClass()} shadow-md py-4 px-6 flex flex-col sm:flex-row justify-between items-center sticky top-0 z-50 rounded-b-xl gap-4`}>
+                <img src={Pokemon_logo} alt="Pokémon_logo" className="w-40" />
+                <div className="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto">
+                    <div className="relative w-full sm:w-64">
+                        <input
+                            type="text"
+                            placeholder="Rechercher un Pokémon par nom..."
+                            className={`w-full pl-10 pr-4 py-2 rounded border ${getInputClass()}`}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    </div>
+                    <div className="w-full sm:w-64">
+                        <select
+                            value={selectedType}
+                            onChange={(e) => setSelectedType(e.target.value)}
+                            className={`w-full px-4 py-2 rounded border ${getInputClass()}`}
+                        >
+                            <option value="all">Tous les types</option>
+                            {types.map((type) => (
+                                <option key={type.name} value={type.name}>
+                                    {type.name.charAt(0).toUpperCase() + type.name.slice(1)}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={theme === "dark"}
+                            onChange={toggleTheme}
+                            className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-gray-600 transition-all duration-300">
+                            <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 ${theme === 'dark' ? 'translate-x-5' : 'bg-gray-300'}`}>
+                                <span className={`absolute inset-0 flex items-center justify-center text-xs ${theme === 'dark' ? 'text-black' : 'text-gray-600'}`}>
+                                    {theme === 'dark' ? '🌙' : '☀️'}
+                                </span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </header>
+
+            {/* Grille de cartes Pokémon */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 max-w-8xl px-30 mx-auto">
+                {filtered.map((poke) => {
+                    const id = poke.url.split("/")[6];
+                    const image = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+                    const types = typeMap[poke.name] || [];
+
+                    const handleClick = () => {
+                        fetch(`https://pokeapi.co/api/v2/pokemon/${poke.name}`)
+                            .then((res) => res.json())
+                            .then((data) => {
+                                fetch(data.species.url)
+                                    .then((res) => res.json())
+                                    .then((speciesData) => {
+                                        fetch(speciesData.evolution_chain.url)
+                                            .then((res) => res.json())
+                                            .then((evoData) => {
+                                                const evoChain = [];
+                                                let evo = evoData.chain;
+                                                while (evo) {
+                                                    evoChain.push(evo.species.name);
+                                                    evo = evo.evolves_to[0];
+                                                }
+                                                Promise.all(
+                                                    evoChain.map((name) =>
+                                                        fetch(`https://pokeapi.co/api/v2/pokemon/${name}`)
+                                                            .then((res) => res.json())
+                                                            .then((pokeData) => ({
+                                                                name: pokeData.name,
+                                                                image:
+                                                                    pokeData.sprites?.other["official-artwork"]?.front_default || "",
+                                                            }))
+                                                    )
+                                                ).then((evolutionDetails) => {
+                                                    setSelectedPokemon({
+                                                        name: data.name,
+                                                        image: data.sprites?.other["official-artwork"]?.front_default || "",
+                                                        weight: data.weight,
+                                                        height: data.height,
+                                                        types: data.types,
+                                                        stats: data.stats,
+                                                        evolution: evolutionDetails,
+                                                    });
+                                                });
+                                            });
+                                    });
+                            });
+                    };
+
+                    return (
+                        <div
+                            key={poke.name}
+                            onClick={handleClick}
+                            className="cursor-pointer"
+                        >
+                            <PokemonCard name={poke.name} image={image} types={types} theme={theme} />
+                        </div>
+                    );
+                })}
             </div>
-          );
-        })}
-      </div>
 
-      
-      <PokemonModal
-        pokemon={selectedPokemon}
-        onClose={() => setSelectedPokemon(null)}
-      />
-    </div>
-  );
+            {/* Modal Pokémon */}
+            <PokemonModal
+                pokemon={selectedPokemon}
+                onClose={() => setSelectedPokemon(null)}
+                theme={theme}
+            />
+        </div>
+    );
 }
