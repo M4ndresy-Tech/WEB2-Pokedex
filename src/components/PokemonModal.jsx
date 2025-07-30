@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export default function PokemonModal({ pokemon, onClose }) {
+export default function PokemonModal({ pokemon, onClose, theme }) {
     if (!pokemon) return null;
 
     const statLabels = {
@@ -53,12 +53,67 @@ export default function PokemonModal({ pokemon, onClose }) {
         }
     }
 
+    const getOverlayClass = () => {
+        switch (theme) {
+            case "light":
+                return "bg-[#6a9ae7] bg-opacity-60";
+            case "dark":
+                return "bg-gray-900 bg-opacity-60";
+            default:
+                return "bg-[#6a9ae7] bg-opacity-60";
+        }
+    };
+
+    const getModalClass = () => {
+        switch (theme) {
+            case "light":
+                return "bg-white text-gray-800";
+            case "dark":
+                return "bg-gray-800 text-white";
+            default:
+                return "bg-white text-gray-800";
+        }
+    };
+
+    const getTypeBadgeClass = () => {
+        switch (theme) {
+            case "light":
+                return "bg-[#6a9ae73d] text-gray-800";
+            case "dark":
+                return "bg-[#4a6ab73d] text-white";
+            default:
+                return "bg-[#6a9ae73d] text-gray-800";
+        }
+    };
+
+    const getEvolutionCardClass = () => {
+        switch (theme) {
+            case "light":
+                return "bg-gray-100 text-gray-700";
+            case "dark":
+                return "bg-gray-700 text-white";
+            default:
+                return "bg-gray-100 text-gray-700";
+        }
+    };
+
+    const getStatBarBgClass = () => {
+        switch (theme) {
+            case "light":
+                return "bg-gray-200";
+            case "dark":
+                return "bg-gray-600";
+            default:
+                return "bg-gray-200";
+        }
+    };
+
     return (
-        <div className="fixed inset-0 bg-[#6a9ae7] bg-opacity-60 flex justify-center items-center z-50">
-            <div className="bg-white rounded-2xl p-6 w-[95%] max-w-5xl relative shadow-lg">
+        <div className={`fixed inset-0 ${getOverlayClass()} flex justify-center items-center z-50`}>
+            <div className={`rounded-2xl p-6 w-[95%] max-w-5xl relative shadow-lg ${getModalClass()}`}>
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-600 hover:text-red-500 text-xl"
+                    className={`absolute top-4 right-4 text-xl ${theme === "light" ? "text-gray-600 hover:text-red-500" : "text-gray-300 hover:text-red-400"}`}
                 >
                     ✕
                 </button>
@@ -78,17 +133,17 @@ export default function PokemonModal({ pokemon, onClose }) {
                                     {pokemon.types.map((type, index) => (
                                         <span
                                             key={index}
-                                            className={`px-3 py-1 text-white rounded-full text-sm bg-${type.type.name}`}
+                                            className={`px-3 py-1 rounded-full text-sm ${getTypeBadgeClass()}`}
                                         >
                       {type.type.name}
                     </span>
                                     ))}
                                 </div>
 
-                                <p className="mt-4 text-gray-700">
+                                <p className={`mt-4 ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
                                     <strong>Taille:</strong> {pokemon.height / 10} m
                                 </p>
-                                <p className="text-gray-700">
+                                <p className={`${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
                                     <strong>Poids:</strong> {pokemon.weight / 10} kg
                                 </p>
                             </div>
@@ -97,20 +152,20 @@ export default function PokemonModal({ pokemon, onClose }) {
                         {/* Évolution */}
                         {pokemon.evolution?.length > 1 && (
                             <div className="mt-6 w-full flex flex-col items-center">
-                                <h3 className="text-xl font-semibold mb-2 text-gray-800">Évolutions</h3>
+                                <h3 className="text-xl font-semibold mb-2">Évolutions</h3>
                                 <div className="flex gap-4 overflow-x-auto">
                                     {pokemon.evolution.map((evo) => (
                                         <div
                                             key={evo.name}
                                             onClick={() => handleEvolutionClick(evo.name)}
-                                            className="cursor-pointer hover:scale-90 transition-transform bg-gray-100 rounded-lg p-3 flex flex-col items-center w-24"
+                                            className={`cursor-pointer hover:scale-90 transition-transform rounded-lg p-3 flex flex-col items-center w-24 ${getEvolutionCardClass()}`}
                                         >
                                             <img
                                                 src={evo.image}
                                                 alt={evo.name}
                                                 className="w-16 h-16 object-contain"
                                             />
-                                            <p className="capitalize mt-2 text-sm text-gray-700">{evo.name}</p>
+                                            <p className="capitalize mt-2 text-sm">{evo.name}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -120,7 +175,7 @@ export default function PokemonModal({ pokemon, onClose }) {
 
                     {/* Colonne droite : Statistiques */}
                     <div className="w-full lg:w-1/2">
-                        <h3 className="text-xl font-semibold mb-4 text-gray-800 text-center">Statistiques</h3>
+                        <h3 className="text-xl font-semibold mb-4 text-center">Statistiques</h3>
                         <div className="space-y-3">
                             {statData.map((stat, index) => {
                                 let barColor = "bg-red-500";
@@ -129,11 +184,11 @@ export default function PokemonModal({ pokemon, onClose }) {
 
                                 return (
                                     <div key={index}>
-                                        <div className="flex justify-between mb-1 text-sm font-medium text-gray-700">
+                                        <div className={`flex justify-between mb-1 text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>
                                             <span>{stat.name}</span>
                                             <span>{stat.value}</span>
                                         </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-3">
+                                        <div className={`w-full rounded-full h-3 ${getStatBarBgClass()}`}>
                                             <div
                                                 className={`h-3 rounded-full ${barColor}`}
                                                 style={{ width: `${(stat.value / 150) * 100}%` }}
