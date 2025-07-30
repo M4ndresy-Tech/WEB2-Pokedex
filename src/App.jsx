@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import PokemonCard from "./components/PokemonCard";
 import PokemonModal from "./components/PokemonModal";
 import Pokemon_logo from './assets/Pokémon_logo.png'
@@ -37,6 +37,7 @@ export default function App() {
                 setTypes(validTypes);
             });
     }, []);
+
     useEffect(() => {
         const handler = (e) => {
             setSelectedPokemon(e.detail);
@@ -44,7 +45,6 @@ export default function App() {
         window.addEventListener("openPokemon", handler);
         return () => window.removeEventListener("openPokemon", handler);
     }, []);
-
 
     const filtered = pokemons.filter((poke) => {
         const lowerSearch = search.toLowerCase();
@@ -59,7 +59,7 @@ export default function App() {
 
     return (
         <div className="min-h-screen bg-[#6a9ae7] text-gray-900">
-            <img src={Pokemon_logo} alt="Pokémon_logo" className="mx-auto w-90 py-5"/>
+            <img src={Pokemon_logo} alt="Pokémon_logo" className="mx-auto w-90 py-5" />
             {/* Barre du haut : champ de recherche + select */}
             <div className="flex flex-col sm:flex-row justify-center gap-4 items-center p-4 max-w-8xl mx-30 bg-white">
                 <div className="relative w-full sm:w-1/3">
@@ -93,7 +93,7 @@ export default function App() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 max-w-8xl px-30 mx-auto">
                 {filtered.map((poke) => {
                     const id = poke.url.split("/")[6];
-                    const image = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+                    const image = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
                     const types = typeMap[poke.name] || [];
 
                     const handleClick = () => {
@@ -119,16 +119,17 @@ export default function App() {
                                                             .then((pokeData) => ({
                                                                 name: pokeData.name,
                                                                 image:
-                                                                    pokeData.sprites?.front_default || "",
+                                                                    pokeData.sprites?.other["official-artwork"]?.front_default || "",
                                                             }))
                                                     )
                                                 ).then((evolutionDetails) => {
                                                     setSelectedPokemon({
                                                         name: data.name,
-                                                        image: image,
+                                                        image: data.sprites?.other["official-artwork"]?.front_default || "",
                                                         weight: data.weight,
                                                         height: data.height,
                                                         types: data.types,
+                                                        stats: data.stats,
                                                         evolution: evolutionDetails,
                                                     });
                                                 });
@@ -137,14 +138,13 @@ export default function App() {
                             });
                     };
 
-
                     return (
                         <div
                             key={poke.name}
                             onClick={handleClick}
                             className="cursor-pointer"
                         >
-                            <PokemonCard name={poke.name} image={image} types={types}/>
+                            <PokemonCard name={poke.name} image={image} types={types} />
                         </div>
                     );
                 })}

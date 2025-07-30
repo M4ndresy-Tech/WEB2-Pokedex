@@ -1,9 +1,22 @@
 import axios from "axios";
 
-export default function PokemonModal({pokemon, onClose}) {
+export default function PokemonModal({ pokemon, onClose }) {
     if (!pokemon) return null;
 
-    // Fonction pour gérer le clic sur une évolution
+    const statLabels = {
+        hp: "HP",
+        attack: "Attack",
+        defense: "Defense",
+        "special-attack": "Sp. Attack",
+        "special-defense": "Sp. Defense",
+        speed: "Speed",
+    };
+
+    const statData = pokemon.stats?.map((stat) => ({
+        name: statLabels[stat.stat.name] || stat.stat.name,
+        value: stat.base_stat,
+    })) || [];
+
     async function handleEvolutionClick(name) {
         try {
             const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${name}`);
@@ -27,13 +40,13 @@ export default function PokemonModal({pokemon, onClose}) {
                 height: response.data.height,
                 weight: response.data.weight,
                 types: response.data.types,
+                stats: response.data.stats,
                 evolution: evoChain,
             };
 
-            onClose(); // Ferme le modal actuel
-
+            onClose();
             setTimeout(() => {
-                window.dispatchEvent(new CustomEvent("openPokemon", {detail: selected}));
+                window.dispatchEvent(new CustomEvent("openPokemon", { detail: selected }));
             }, 200);
         } catch (error) {
             console.error("Erreur lors du chargement du Pokémon", error);
@@ -42,7 +55,7 @@ export default function PokemonModal({pokemon, onClose}) {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-            <div className="bg-white rounded-2xl p-6 w-[90%] max-w-2xl relative shadow-lg">
+            <div className="bg-white rounded-2xl p-6 w-[95%] max-w-5xl relative shadow-lg">
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 text-gray-600 hover:text-red-500 text-xl"
@@ -50,57 +63,88 @@ export default function PokemonModal({pokemon, onClose}) {
                     ✕
                 </button>
 
-                <div className="flex items-center gap-6">
-                    <img
-                        src={pokemon.image}
-                        alt={pokemon.name}
-                        className="w-40 h-40 object-contain"
-                    />
+                <div className="flex flex-col lg:flex-row gap-6 mt-4">
+                    {/* Colonne gauche */}
+                    <div className="flex flex-col items-center lg:items-start w-full lg:w-1/2">
+                        <div className="flex gap-6 items-center justify-center w-full">
+                            <img
+                                src={pokemon.image}
+                                alt={pokemon.name}
+                                className="w-40 h-40 object-contain"
+                            />
+                            <div>
+                                <h2 className="text-3xl font-bold capitalize mt-4 text-center lg:text-left">{pokemon.name}</h2>
+                                <div className="flex gap-2 mt-2">
+                                    {pokemon.types.map((type, index) => (
+                                        <span
+                                            key={index}
+                                            className={`px-3 py-1 text-white rounded-full text-sm bg-${type.type.name}`}
+                                        >
+                      {type.type.name}
+                    </span>
+                                    ))}
+                                </div>
 
-                    <div>
-                        <h2 className="text-3xl font-bold capitalize">{pokemon.name}</h2>
-                        <div className="flex gap-2 mt-2">
-                            {pokemon.types.map((type, index) => (
-                                <span
-                                    key={index}
-                                    className={`px-3 py-1 text-white rounded-full text-sm bg-${type.type.name}`}
-                                >
-                  {type.type.name}
-                </span>
-                            ))}
+                                <p className="mt-4 text-gray-700">
+                                    <strong>Taille:</strong> {pokemon.height / 10} m
+                                </p>
+                                <p className="text-gray-700">
+                                    <strong>Poids:</strong> {pokemon.weight / 10} kg
+                                </p>
+                            </div>
                         </div>
 
-                        <p className="mt-4 text-gray-700">
-                            <strong>Taille:</strong> {pokemon.height / 10} m
-                        </p>
-                        <p className="text-gray-700">
-                            <strong>Poids:</strong> {pokemon.weight / 10} kg
-                        </p>
+                        {/* Évolution */}
+                        {pokemon.evolution?.length > 1 && (
+                            <div className="mt-6 w-full flex flex-col items-center">
+                                <h3 className="text-xl font-semibold mb-2 text-gray-800">Évolutions</h3>
+                                <div className="flex gap-4 overflow-x-auto">
+                                    {pokemon.evolution.map((evo) => (
+                                        <div
+                                            key={evo.name}
+                                            onClick={() => handleEvolutionClick(evo.name)}
+                                            className="cursor-pointer hover:scale-90 transition-transform bg-gray-100 rounded-lg p-3 flex flex-col items-center w-24"
+                                        >
+                                            <img
+                                                src={evo.image}
+                                                alt={evo.name}
+                                                className="w-16 h-16 object-contain"
+                                            />
+                                            <p className="capitalize mt-2 text-sm text-gray-700">{evo.name}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Colonne droite : Statistiques */}
+                    <div className="w-full lg:w-1/2">
+                        <h3 className="text-xl font-semibold mb-4 text-gray-800 text-center">Statistiques</h3>
+                        <div className="space-y-3">
+                            {statData.map((stat, index) => {
+                                let barColor = "bg-red-500";
+                                if (stat.value >= 100) barColor = "bg-green-500";
+                                else if (stat.value >= 50) barColor = "bg-yellow-400";
+
+                                return (
+                                    <div key={index}>
+                                        <div className="flex justify-between mb-1 text-sm font-medium text-gray-700">
+                                            <span>{stat.name}</span>
+                                            <span>{stat.value}</span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-3">
+                                            <div
+                                                className={`h-3 rounded-full ${barColor}`}
+                                                style={{ width: `${(stat.value / 150) * 100}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
-
-                {/* Évolution */}
-                {pokemon.evolution?.length > 1 && (
-                    <div className="mt-6">
-                        <h3 className="text-xl font-semibold mb-2 text-gray-800">Évolutions</h3>
-                        <div className="flex gap-4 overflow-x-auto">
-                            {pokemon.evolution.map((evo) => (
-                                <div
-                                    key={evo.name}
-                                    onClick={() => handleEvolutionClick(evo.name)}
-                                    className="cursor-pointer hover:scale-105 transition-transform bg-gray-100 rounded-lg p-3 flex flex-col items-center w-24"
-                                >
-                                    <img
-                                        src={evo.image}
-                                        alt={evo.name}
-                                        className="w-16 h-16 object-contain"
-                                    />
-                                    <p className="capitalize mt-2 text-sm text-gray-700">{evo.name}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );
