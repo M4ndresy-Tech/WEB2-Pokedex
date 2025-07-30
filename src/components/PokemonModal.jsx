@@ -54,7 +54,7 @@ export default function PokemonModal({ pokemon, onClose }) {
     }
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-[#6a9ae7] bg-opacity-60 flex justify-center items-center z-50">
             <div className="bg-white rounded-2xl p-6 w-[95%] max-w-5xl relative shadow-lg">
                 <button
                     onClick={onClose}
