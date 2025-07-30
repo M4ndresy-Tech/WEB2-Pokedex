@@ -31,7 +31,7 @@ export default function PokemonCard({ name, image, types = [], theme }) {
                 {types.map((type) => (
                     <span
                         key={type}
-                        className={`text-xs px-2 py-0.5 rounded-full capitalize ${getTypeBadgeClass()}`}
+                        className={`bg-${type} text-xs px-2 py-0.5 rounded-full capitalize ${getTypeBadgeClass()}`}
                     >
             {type}
           </span>
